@@ -74,11 +74,11 @@ flags.DEFINE_integer("num_warmup_steps", 10000, "Number of warmup steps.")
 flags.DEFINE_integer("save_checkpoints_steps", 1000,
                      "How often to save the model checkpoint.")
 
+flags.DEFINE_integer("save_summary_steps", 1000,
+                     "How often to save loss summary.")
+
 flags.DEFINE_integer("iterations_per_loop", 1000,
                      "How many steps to make in each estimator call.")
-
-flags.DEFINE_integer("log_step_count_steps", 100,
-                     "How often loss and global step is logged and displayed")
 
 flags.DEFINE_integer("max_eval_steps", 100, "Maximum number of eval steps.")
 
@@ -435,6 +435,7 @@ def main(_):
       master=FLAGS.master,
       model_dir=FLAGS.output_dir,
       save_checkpoints_steps=FLAGS.save_checkpoints_steps,
+      save_summary_steps=FLAGS.save_summary_steps,
       tpu_config=tf.contrib.tpu.TPUConfig(
           iterations_per_loop=FLAGS.iterations_per_loop,
           num_shards=FLAGS.num_tpu_cores,
