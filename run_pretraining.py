@@ -23,6 +23,8 @@ import modeling
 import optimization
 import tensorflow as tf
 
+from logs import hooks_helper
+
 flags = tf.flags
 
 FLAGS = flags.FLAGS
@@ -147,6 +149,10 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
     (next_sentence_loss, next_sentence_example_loss,
      next_sentence_log_probs) = get_next_sentence_output(
          bert_config, model.get_pooled_output(), next_sentence_labels)
+
+    # This tensor is used by logging hooks.
+    tf.identity(masked_lm_loss, name="language_model_loss")
+    tf.identity(next_sentence_loss, name="next_sentence_loss")
 
     total_loss = masked_lm_loss + next_sentence_loss
 
@@ -467,7 +473,15 @@ def main(_):
         max_seq_length=FLAGS.max_seq_length,
         max_predictions_per_seq=FLAGS.max_predictions_per_seq,
         is_training=True)
-    estimator.train(input_fn=train_input_fn, max_steps=FLAGS.num_train_steps)
+
+    train_hooks = hooks_helper.get_train_hooks(
+        ["LoggingTensorHook"],
+        model_dir=FLAGS.model_dir,
+        batch_size=FLAGS.batch_size,  # for ExamplesPerSecondHook
+        tensors_to_log={"language_model_loss": "language_model_loss"}
+    )
+
+    estimator.train(input_fn=train_input_fn, max_steps=FLAGS.num_train_steps, hooks=train_hooks)
 
   if FLAGS.do_eval:
     tf.logging.info("***** Running evaluation *****")
