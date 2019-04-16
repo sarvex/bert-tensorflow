@@ -157,13 +157,6 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
 
     total_loss = masked_lm_loss + next_sentence_loss
 
-    # This tensor is used by logging hooks.
-    tf.identity(masked_lm_loss, name="language_model_loss")
-    tf.identity(next_sentence_loss, name="next_sentence_loss")
-    tf.identity(total_loss, name="total_loss")
-    tf.summary.scalar(name="masked_lm_loss_train", tensor=masked_lm_loss)
-    tf.summary.scalar(name="next_sentence_loss_train", tensor=next_sentence_loss)
-
     tvars = tf.trainable_variables()
 
     initialized_variable_names = {}
@@ -482,17 +475,7 @@ def main(_):
         max_predictions_per_seq=FLAGS.max_predictions_per_seq,
         is_training=True)
 
-    train_hooks = hooks_helper.get_train_hooks(
-        ["loggingtensorhook", "summarysaverhook"],
-        model_dir=FLAGS.output_dir,
-        batch_size=FLAGS.train_batch_size,  # for ExamplesPerSecondHook
-        tensors_to_log={"total_loss": "total_loss",
-                        "language_model_loss": "language_model_loss",
-                        "next_sentence_loss": "next_sentence_loss"},
-        every_n_iter=FLAGS.save_summary_steps
-    )
-
-    estimator.train(input_fn=train_input_fn, max_steps=FLAGS.num_train_steps, hooks=train_hooks)
+    estimator.train(input_fn=train_input_fn, max_steps=FLAGS.num_train_steps)
 
   if FLAGS.do_eval:
     tf.logging.info("***** Running evaluation *****")
