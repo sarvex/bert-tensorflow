@@ -84,3 +84,67 @@ python create_pretraining_data.py \
  --save_checkpoints_steps=200\
  --iterations_per_loop=10\
  --save_summary_steps=10
+
+
+  --------------------------------------------------------------
+--------------------------------------------------------------
+
+DATA SHUFFLE TEST
+
+python create_pretraining_data.py \
+  --input_file=./samples/der.txt \
+  --output_file=./samples/der.tfrecord \
+  --vocab_file=./samples/vocab.txt \
+  --do_lower_case=True \
+  --max_seq_length=128 \
+  --max_predictions_per_seq=20 \
+  --masked_lm_prob=0.15 \
+  --random_seed=12345 \
+  --dupe_factor=1
+
+python create_pretraining_data.py \
+  --input_file=./samples/sample_text.txt \
+  --output_file=./samples/sample_text_d1.tfrecord \
+  --vocab_file=./samples/vocab.txt \
+  --do_lower_case=True \
+  --max_seq_length=128 \
+  --max_predictions_per_seq=20 \
+  --masked_lm_prob=0.15 \
+  --random_seed=12345 \
+  --dupe_factor=1
+
+python3 run_pretraining.py \
+ --input_file=./samples/sample_text_d1.tfrecord\
+ --output_dir=./runs/sample_test/ \
+ --do_train=True \
+ --do_eval=True \
+ --bert_config_file=./samples/bert_config.json \
+ --train_batch_size=1 \
+ --max_seq_length=128 \
+ --max_predictions_per_seq=20 \
+ --num_train_steps=200 \
+ --num_warmup_steps=10 \
+ --learning_rate=2e-5 \
+ --save_checkpoints_steps=200\
+ --iterations_per_loop=1\
+ --save_summary_steps=1
+
+
+  --------------------------------------------------------------
+--------------------------------------------------------------
+
+python3 run_pretraining.py \
+ --input_file=./samples/sample_text_d1.tfrecord\
+ --output_dir=./runs/logging/ \
+ --do_train=True \
+ --do_eval=True \
+ --bert_config_file=./samples/bert_config.json \
+ --train_batch_size=1 \
+ --max_seq_length=128 \
+ --max_predictions_per_seq=20 \
+ --num_train_steps=200 \
+ --num_warmup_steps=10 \
+ --learning_rate=2e-5 \
+ --save_checkpoints_steps=200\
+ --iterations_per_loop=1\
+ --save_summary_steps=1
