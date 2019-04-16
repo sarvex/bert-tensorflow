@@ -22,8 +22,9 @@ import os
 import modeling
 import optimization
 import tensorflow as tf
+from tensorflow.python.framework import ops
 
-from logs import hooks_helper
+from official.utils.logs import hooks_helper
 
 flags = tf.flags
 
@@ -123,6 +124,8 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
     for name in sorted(features.keys()):
       tf.logging.info("  name = %s, shape = %s" % (name, features[name].shape))
 
+
+
     input_ids = features["input_ids"]
     input_mask = features["input_mask"]
     segment_ids = features["segment_ids"]
@@ -156,6 +159,8 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
     tf.identity(masked_lm_loss, name="language_model_loss")
     tf.identity(next_sentence_loss, name="next_sentence_loss")
     tf.identity(total_loss, name="total_loss")
+    tf.summary.scalar(name="masked_lm_loss_train", tensor=masked_lm_loss)
+    tf.summary.scalar(name="next_sentence_loss_train", tensor=next_sentence_loss)
 
     tvars = tf.trainable_variables()
 
@@ -476,7 +481,7 @@ def main(_):
         is_training=True)
 
     train_hooks = hooks_helper.get_train_hooks(
-        ["LoggingTensorHook", ],
+        ["loggingtensorhook", "summarysaverhook"],
         model_dir=FLAGS.output_dir,
         batch_size=FLAGS.train_batch_size,  # for ExamplesPerSecondHook
         tensors_to_log={"total_loss": "total_loss",
