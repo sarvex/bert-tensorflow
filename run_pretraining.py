@@ -22,9 +22,11 @@ import os
 import modeling
 import optimization
 import tensorflow as tf
-from tensorflow.python.framework import ops
+from knockknock import slack_sender
 
 from official.utils.logs import hooks_helper
+
+webhook_url="https://hooks.slack.com/services/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"
 
 flags = tf.flags
 
@@ -417,7 +419,7 @@ def _decode_record(record, name_to_features):
 
   return example
 
-
+@slack_sender(webhook_url=webhook_url, channel="monitoring")
 def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
