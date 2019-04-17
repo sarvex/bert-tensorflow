@@ -44,14 +44,8 @@ flags.DEFINE_string(
     "input_files", None,
     "The evaluation dataset files")
 
-# flags.DEFINE_string(
-#     "output_dir", None,
-#     "The output directory where the model checkpoints will be written.")
-
 ## Other parameters
-flags.DEFINE_string(
-    "init_checkpoint", None,
-    "Initial checkpoint (usually from a pre-trained BERT model).")
+
 
 flags.DEFINE_integer(
     "max_seq_length", 128,
@@ -63,12 +57,6 @@ flags.DEFINE_integer(
     "max_predictions_per_seq", 20,
     "Maximum number of masked LM predictions per sequence. "
     "Must match data generation.")
-
-flags.DEFINE_bool("do_train", False, "Whether to run training.")
-
-flags.DEFINE_bool("do_eval", False, "Whether to run eval on the dev set.")
-
-flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
 
 flags.DEFINE_integer("eval_batch_size", 8, "Total batch size for eval.")
 
@@ -418,8 +406,6 @@ def _decode_record(record, name_to_features):
 def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
-  if not FLAGS.do_train and not FLAGS.do_eval:
-    raise ValueError("At least one of `do_train` or `do_eval` must be True.")
 
   bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
 
@@ -440,7 +426,7 @@ def main(_):
   steps = [f.split("-")[1] for f in files]
   fs_sorted = sorted(list(zip(files, steps)), key=lambda x: x[1])
 
-  output_eval_file = os.path.join(FLAGS.ckpt_dir, "eval/eval_results.txt")
+  output_eval_file = os.path.join(FLAGS.ckpt_dir, "eval_results.txt")
   tf.gfile.MakeDirs(os.path.join(*output_eval_file.split("/")[:-1]))
   _ = open(output_eval_file, "w")
 
@@ -452,7 +438,6 @@ def main(_):
       master=FLAGS.master,
       # model_dir=FLAGS.ckpt_dir,      # THIS IS PROBLEMATIC
       save_checkpoints_steps=FLAGS.save_checkpoints_steps,
-      keep_checkpoint_max=0,  # keep all checkpoints
       tpu_config=tf.contrib.tpu.TPUConfig(
         iterations_per_loop=FLAGS.iterations_per_loop,
         num_shards=FLAGS.num_tpu_cores,
@@ -473,7 +458,6 @@ def main(_):
         use_tpu=FLAGS.use_tpu,
         model_fn=model_fn,
         config=run_config,
-        # train_batch_size=FLAGS.train_batch_size,
         eval_batch_size=FLAGS.eval_batch_size)
 
     tf.logging.info("***** Running evaluation *****")

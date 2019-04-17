@@ -155,17 +155,29 @@ python3 run_pretraining.py \
 
  EVAL
 
- --ckpt_dir=./runs/eval_loop
+python3 run_pretraining.py \
+ --input_file=./samples/sample_text.tfrecord\
+ --output_dir=./runs/eval_loop_2/ \
+ --do_train=True \
+ --do_eval=False \
+ --bert_config_file=./samples/bert_config.json \
+ --train_batch_size=1 \
+ --max_seq_length=128 \
+ --max_predictions_per_seq=20 \
+ --num_train_steps=200 \
+ --num_warmup_steps=10 \
+ --learning_rate=2e-5 \
+ --save_checkpoints_steps=25\
+ --iterations_per_loop=1\
+ --save_summary_steps=1
+
+Local
+
+--ckpt_dir=./runs/eval_loop
 --input_files=./samples/sample_text.tfrecord
---do_train=False
---do_eval=True
 --bert_config_file=./samples/bert_config.json
 --eval_batch_size=1
 --max_seq_length=128
---max_predictions_per_seq=20
---num_train_steps=200
---num_warmup_steps=10
---learning_rate=2e-5
 --iterations_per_loop=8
---save_summary_steps=8
 --max_eval_steps=32
+

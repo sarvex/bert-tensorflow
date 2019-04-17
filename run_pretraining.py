@@ -60,7 +60,7 @@ flags.DEFINE_integer(
     "Maximum number of masked LM predictions per sequence. "
     "Must match data generation.")
 
-flags.DEFINE_bool("do_train", False, "Whether to run training.")
+flags.DEFINE_bool("do_train", True, "Whether to run training.")
 
 flags.DEFINE_bool("do_eval", False, "Whether to run eval on the dev set.")
 
@@ -410,7 +410,7 @@ def _decode_record(record, name_to_features):
 
   return example
 
-@slack_sender(webhook_url=webhook_url, channel="monitoring")
+# @slack_sender(webhook_url=webhook_url, channel="monitoring")
 def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -441,10 +441,11 @@ def main(_):
       model_dir=FLAGS.output_dir,
       save_checkpoints_steps=FLAGS.save_checkpoints_steps,
       save_summary_steps=FLAGS.save_summary_steps,
+      keep_checkpoint_max=0,  # keep all checkpoints
       tpu_config=tf.contrib.tpu.TPUConfig(
-          iterations_per_loop=FLAGS.iterations_per_loop,
-          num_shards=FLAGS.num_tpu_cores,
-          per_host_input_for_training=is_per_host))
+            iterations_per_loop=FLAGS.iterations_per_loop,
+            num_shards=FLAGS.num_tpu_cores,
+            per_host_input_for_training=is_per_host))
 
   model_fn = model_fn_builder(
       bert_config=bert_config,
