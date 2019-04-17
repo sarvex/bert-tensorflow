@@ -22,7 +22,9 @@ import os
 import modeling
 import optimization
 import tensorflow as tf
-from knockknock import slack_sender
+# from knockknock import slack_sender
+from google.cloud import storage
+
 
 webhook_url="https://hooks.slack.com/services/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"
 
@@ -43,6 +45,14 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     "input_files", None,
     "The evaluation dataset files")
+
+flags.DEFINE_string(
+    "sa_key", None,
+    "GCloud service account key json")
+
+flags.DEFINE_string(
+    "bucket", None,
+    "Name of the GCloud Storage bucket")
 
 ## Other parameters
 
@@ -406,6 +416,9 @@ def _decode_record(record, name_to_features):
 def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
+  location = "local"
+  if FLAGS.ckpt_dir[:5] == "gs://":
+    location = "gcloud"
 
   bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
 
@@ -422,7 +435,16 @@ def main(_):
     tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
         FLAGS.tpu_name, zone=FLAGS.tpu_zone, project=FLAGS.gcp_project)
 
-  files = [f[:-5] for f in os.listdir(FLAGS.ckpt_dir) if f[:5] == "model" and f[-5:] == ".meta"]
+  if location == "local":
+    raw_files = os.listdir(FLAGS.ckpt_dir)
+  elif location == "gcloud":
+    storage_client = storage.Client.from_service_account_json(FLAGS.sa_key)
+    bucket = storage_client.get_bucket(FLAGS.bucket)
+    blobs = bucket.list_blobs()
+    raw_files = [b for b in blobs if "runs" in str(b)]
+    # raw_files = [str(b).split("/")[-1] for b in blobs]
+
+  files = [f[:-5] for f in raw_files if f[:5] == "model" and f[-5:] == ".meta"]
   steps = [f.split("-")[1] for f in files]
   fs_sorted = sorted(list(zip(files, steps)), key=lambda x: x[1])
 

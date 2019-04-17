@@ -36,19 +36,30 @@ python3 run_pretraining.py \
  --input_file=${BERT_BASE_DIR}/training_data/tf_examples.tfrecord1 \
  --output_dir=${BERT_BASE_DIR}/${RUN_DIR} \
  --do_train=True \
- --do_eval=True \
  --bert_config_file=${BERT_BASE_DIR}/bert_config.json \
  --train_batch_size=8 \
  --max_seq_length=128 \
  --use_tpu=True \
  --max_predictions_per_seq=20 \
- --num_train_steps=30000 \
- --num_warmup_steps=1000 \
+ --num_train_steps=2000 \
+ --num_warmup_steps=200 \
  --learning_rate=2e-5 \
  --tpu_name=bert\
- --save_checkpoints_steps=500\
- --iterations_per_loop=1\
- --save_summary_steps=1
+ --save_checkpoints_steps=250\
+ --iterations_per_loop=50\
+ --save_summary_steps=50
+
+python3 run_eval.py \
+    --ckpt_dir=${BERT_BASE_DIR}/${RUN_DIR} \
+    --input_files=${BERT_BASE_DIR}/training_data/tf_examples.tfrecord40 \
+    --bert_config_file=./samples/bert_config.json \
+    --eval_batch_size=8 \
+    --max_seq_length=128 \
+    --iterations_per_loop=8 \
+    --max_eval_steps=100
+    --use_tpu=True \
+    --tpu_name=bert
+
 
 
 
@@ -131,25 +142,6 @@ python3 run_pretraining.py \
  --save_summary_steps=1
 
 
-  --------------------------------------------------------------
---------------------------------------------------------------
-
-python3 run_pretraining.py \
- --input_file=./samples/sample_text_d1.tfrecord\
- --output_dir=./runs/logging/ \
- --do_train=True \
- --do_eval=True \
- --bert_config_file=./samples/bert_config.json \
- --train_batch_size=1 \
- --max_seq_length=128 \
- --max_predictions_per_seq=20 \
- --num_train_steps=200 \
- --num_warmup_steps=10 \
- --learning_rate=2e-5 \
- --save_checkpoints_steps=200\
- --iterations_per_loop=1\
- --save_summary_steps=1
-
 --------------------------------------------------------------
 --------------------------------------------------------------
 
@@ -181,3 +173,40 @@ Local
 --iterations_per_loop=8
 --max_eval_steps=32
 
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+PROPER RUN
+
+70 tf records
+approx 4 mill samples per tf record
+280m samples in total
+
+python3 run_pretraining.py \
+ --input_file=${BERT_BASE_DIR}/training_data_128_20_10_cased/tf_examples.tfrecord* \
+ --output_dir=${BERT_BASE_DIR}/${RUN_DIR} \
+ --do_train=True \
+ --bert_config_file=${BERT_BASE_DIR}/bert_config.json \
+ --train_batch_size=1024 \
+ --max_seq_length=128 \
+ --max_predictions_per_seq=20 \
+ --num_train_steps=270000 \
+ --num_warmup_steps=10000 \
+ --learning_rate=1e-4 \
+ --use_tpu=True \
+ --tpu_name=bert\
+ --save_checkpoints_steps=5000\
+ --iterations_per_loop=250\
+ --save_summary_steps=250
+
+python3 run_eval.py \
+    --ckpt_dir=${BERT_BASE_DIR}/${RUN_DIR} \
+    --input_files=${BERT_BASE_DIR}/training_data/tf_examples.tfrecord40 \
+    --bert_config_file=./samples/bert_config.json \
+    --eval_batch_size=8 \
+    --max_seq_length=128 \
+    --iterations_per_loop=8 \
+    --max_eval_steps=100
+    --use_tpu=True \
+    --tpu_name=bert
