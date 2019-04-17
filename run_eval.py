@@ -439,13 +439,18 @@ def main(_):
   files = [f[:-5] for f in os.listdir(FLAGS.ckpt_dir) if f[:5] == "model" and f[-5:] == ".meta"]
   steps = [f.split("-")[1] for f in files]
   fs_sorted = sorted(list(zip(files, steps)), key=lambda x: x[1])
+
+  output_eval_file = os.path.join(FLAGS.ckpt_dir, "eval/eval_results.txt")
+  tf.gfile.MakeDirs(os.path.join(*output_eval_file.split("/")[:-1]))
+  _ = open(output_eval_file, "w")
+
   for ckpt_file, steps in fs_sorted:
 
     is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
     run_config = tf.contrib.tpu.RunConfig(
       cluster=tpu_cluster_resolver,
       master=FLAGS.master,
-      model_dir=ckpt_file,      # THIS IS PROBLEMATIC
+      # model_dir=FLAGS.ckpt_dir,      # THIS IS PROBLEMATIC
       save_checkpoints_steps=FLAGS.save_checkpoints_steps,
       keep_checkpoint_max=0,  # keep all checkpoints
       tpu_config=tf.contrib.tpu.TPUConfig(
@@ -483,7 +488,6 @@ def main(_):
     result = estimator.evaluate(
         input_fn=eval_input_fn, steps=FLAGS.max_eval_steps)
 
-    output_eval_file = os.path.join(FLAGS.ckpt_dir, "eval_results.txt")
     with tf.gfile.GFile(output_eval_file, "a") as writer:
       tf.logging.info("***** Eval results *****")
       writer.write(str(steps) + "\n\n")
