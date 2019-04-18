@@ -438,7 +438,10 @@ def main(_):
   if location == "local":
     raw_files = os.listdir(FLAGS.ckpt_dir)
   elif location == "gcloud":
-    storage_client = storage.Client.from_service_account_json(FLAGS.sa_key)
+    try:
+      storage_client = storage.Client.from_service_account_json(FLAGS.sa_key)
+    except:
+      storage_client = storage.Client()
     bucket = storage_client.get_bucket(FLAGS.bucket)
     blobs = bucket.list_blobs()
     ckpt_folder = "/".join(FLAGS.ckpt_dir.split("/")[3:])
