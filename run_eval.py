@@ -441,8 +441,10 @@ def main(_):
     storage_client = storage.Client.from_service_account_json(FLAGS.sa_key)
     bucket = storage_client.get_bucket(FLAGS.bucket)
     blobs = bucket.list_blobs()
-    raw_files = [b for b in blobs if "runs" in str(b)]
+    ckpt_folder = "/".join(FLAGS.ckpt_dir.split("/")[3:])
+    raw_files = [str(b)[1:-1].split("/")[-1] for b in blobs if ckpt_folder in str(b)]
     # raw_files = [str(b).split("/")[-1] for b in blobs]
+
 
   files = [f[:-5] for f in raw_files if f[:5] == "model" and f[-5:] == ".meta"]
   steps = [f.split("-")[1] for f in files]
@@ -458,7 +460,6 @@ def main(_):
     run_config = tf.contrib.tpu.RunConfig(
       cluster=tpu_cluster_resolver,
       master=FLAGS.master,
-      # model_dir=FLAGS.ckpt_dir,      # THIS IS PROBLEMATIC
       save_checkpoints_steps=FLAGS.save_checkpoints_steps,
       tpu_config=tf.contrib.tpu.TPUConfig(
         iterations_per_loop=FLAGS.iterations_per_loop,

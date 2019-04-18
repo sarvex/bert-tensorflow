@@ -22,7 +22,7 @@ import os
 import modeling
 import optimization
 import tensorflow as tf
-from knockknock import slack_sender
+# from knockknock import slack_sender
 
 webhook_url="https://hooks.slack.com/services/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"
 
