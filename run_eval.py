@@ -450,7 +450,7 @@ def main(_):
 
 
   files = [f[:-5] for f in raw_files if f[:5] == "model" and f[-5:] == ".meta"]
-  steps = [f.split("-")[1] for f in files]
+  steps = [int(f.split("-")[1]) for f in files]
   fs_sorted = sorted(list(zip(files, steps)), key=lambda x: x[1])
 
   output_eval_file = os.path.join(FLAGS.ckpt_dir, "eval_results.txt")

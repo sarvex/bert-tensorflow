@@ -1,0 +1,171 @@
+0
+
+global_step = 0
+loss = 11.220514
+masked_lm_accuracy = 6.1564315e-05
+masked_lm_loss = 10.444288
+next_sentence_accuracy = 0.44812012
+next_sentence_loss = 0.7762404
+
+10000
+
+global_step = 0
+loss = 3.8128536
+masked_lm_accuracy = 0.4102537
+masked_lm_loss = 3.5381796
+next_sentence_accuracy = 0.8796387
+next_sentence_loss = 0.27452
+
+15000
+
+global_step = 0
+loss = 3.106514
+masked_lm_accuracy = 0.49018592
+masked_lm_loss = 2.852756
+next_sentence_accuracy = 0.8918457
+next_sentence_loss = 0.25358027
+
+20000
+
+global_step = 0
+loss = 3.1817179
+masked_lm_accuracy = 0.48644498
+masked_lm_loss = 2.8445323
+next_sentence_accuracy = 0.85827637
+next_sentence_loss = 0.3369757
+
+25000
+
+global_step = 0
+loss = 2.7552714
+masked_lm_accuracy = 0.5321076
+masked_lm_loss = 2.5236359
+next_sentence_accuracy = 0.9052124
+next_sentence_loss = 0.23134756
+
+30000
+
+global_step = 0
+loss = 2.533266
+masked_lm_accuracy = 0.55857664
+masked_lm_loss = 2.3237023
+next_sentence_accuracy = 0.9111328
+next_sentence_loss = 0.20930049
+
+35000
+
+global_step = 0
+loss = 2.3850625
+masked_lm_accuracy = 0.57708216
+masked_lm_loss = 2.193633
+next_sentence_accuracy = 0.92022705
+next_sentence_loss = 0.19117697
+
+40000
+
+global_step = 0
+loss = 2.2982032
+masked_lm_accuracy = 0.589022
+masked_lm_loss = 2.1165226
+next_sentence_accuracy = 0.9244995
+next_sentence_loss = 0.18143013
+
+45000
+
+global_step = 0
+loss = 2.0219746
+masked_lm_accuracy = 0.6177725
+masked_lm_loss = 1.9004804
+next_sentence_accuracy = 0.9515381
+next_sentence_loss = 0.12127254
+
+5000
+
+global_step = 0
+loss = 7.230425
+masked_lm_accuracy = 0.15392889
+masked_lm_loss = 6.7909017
+next_sentence_accuracy = 0.7928467
+next_sentence_loss = 0.4394643
+
+50000
+
+global_step = 0
+loss = 1.9483309
+masked_lm_accuracy = 0.6301795
+masked_lm_loss = 1.8253117
+next_sentence_accuracy = 0.95007324
+next_sentence_loss = 0.12282231
+
+55000
+
+global_step = 0
+loss = 1.870072
+masked_lm_accuracy = 0.6413987
+masked_lm_loss = 1.7519696
+next_sentence_accuracy = 0.9536133
+next_sentence_loss = 0.11785699
+
+60000
+
+global_step = 0
+loss = 1.8212997
+masked_lm_accuracy = 0.6493333
+masked_lm_loss = 1.7074269
+next_sentence_accuracy = 0.95269775
+next_sentence_loss = 0.11360767
+
+65000
+
+global_step = 0
+loss = 1.7917033
+masked_lm_accuracy = 0.65405566
+masked_lm_loss = 1.6775744
+next_sentence_accuracy = 0.95458984
+next_sentence_loss = 0.11383211
+
+70000
+
+global_step = 0
+loss = 1.7914327
+masked_lm_accuracy = 0.6554463
+masked_lm_loss = 1.6765546
+next_sentence_accuracy = 0.953125
+next_sentence_loss = 0.114573054
+
+75000
+
+global_step = 0
+loss = 1.784096
+masked_lm_accuracy = 0.6556889
+masked_lm_loss = 1.6685162
+next_sentence_accuracy = 0.95422363
+next_sentence_loss = 0.11529617
+
+80000
+
+global_step = 0
+loss = 1.764687
+masked_lm_accuracy = 0.6585462
+masked_lm_loss = 1.6506485
+next_sentence_accuracy = 0.9555054
+next_sentence_loss = 0.11375818
+
+85000
+
+global_step = 0
+loss = 1.7504739
+masked_lm_accuracy = 0.66111743
+masked_lm_loss = 1.635365
+next_sentence_accuracy = 0.9526367
+next_sentence_loss = 0.11485007
+
+90000
+
+global_step = 0
+loss = 1.7759557
+masked_lm_accuracy = 0.6577531
+masked_lm_loss = 1.6589265
+next_sentence_accuracy = 0.95336914
+next_sentence_loss = 0.116775274
+
