@@ -210,3 +210,22 @@ python3 run_eval.py \
     --max_eval_steps=100
     --use_tpu=True \
     --tpu_name=bert
+
+
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+python3 run_eval.py \
+--ckpt_dir=gs://german-bert/runs/eval_loop_2 \
+--input_files=gs://german-bert/training_data/sample_text.tfrecord \
+--bert_config_file=gs://german-bert/bert_config.json \
+--eval_batch_size=1 \
+--max_seq_length=128 \
+--iterations_per_loop=8 \
+--max_eval_steps=32
+
+
+
+--sa_key=/Users/deepset/deepset/google-cloud-sdk/deepset-german-bert-b7a607d49b3a.json
+--bucket=german-bert

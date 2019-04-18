@@ -495,7 +495,7 @@ def main(_):
     result = estimator.evaluate(
         input_fn=eval_input_fn, steps=FLAGS.max_eval_steps)
 
-    with tf.gfile.GFile(output_eval_file, "a") as writer:
+    with tf.gfile.GFile("tmp.txt", "a") as writer:
       tf.logging.info("***** Eval results *****")
       writer.write(str(steps) + "\n\n")
       for key in sorted(result.keys()):
