@@ -498,7 +498,9 @@ def main(_):
     result = estimator.evaluate(
         input_fn=eval_input_fn, steps=FLAGS.max_eval_steps)
 
-    with tf.gfile.GFile("tmp.txt", "a") as writer:
+    local_eval_file = "eval_results.txt"
+
+    with tf.gfile.GFile(local_eval_file, "a") as writer:
       tf.logging.info("***** Eval results *****")
       writer.write(str(steps) + "\n\n")
       for key in sorted(result.keys()):
@@ -506,6 +508,13 @@ def main(_):
         writer.write("%s = %s\n" % (key, str(result[key])))
       writer.write("\n")
 
+  eval_file = os.path.join(FLAGS.ckpt_dir, local_eval_file)
+  if location == "local":
+    os.rename(local_eval_file, eval_file)
+  elif location == "gcloud":
+    blob = bucket.blob(eval_file)
+    blob.upload_from_filename(local_eval_file)
+    print('Eval file uploaded to {}.'.format(eval_file))
 
 if __name__ == "__main__":
   flags.mark_flag_as_required("input_files")
