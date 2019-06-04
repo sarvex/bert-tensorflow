@@ -60,9 +60,6 @@ python3 run_eval.py \
     --use_tpu=True \
     --tpu_name=bert
 
-
-
-
  --------------------------------------------------------------
 --------------------------------------------------------------
 
@@ -179,9 +176,12 @@ Local
 
 PROPER RUN
 
+PHASE 1a
+
 70 tf records
 approx 4 mill samples per tf record
-280m samples in total
+dupe factor 10 so 280m samples in total 
+28m per epoch
 
 python3 run_pretraining.py \
  --input_file=${BERT_BASE_DIR}/training_data_128_20_10_cased/tf_examples.tfrecord* \
@@ -200,18 +200,62 @@ python3 run_pretraining.py \
  --iterations_per_loop=250\
  --save_summary_steps=250
 
+PHASE 2
+
+This wil train about 1/10th of an epoch. We are doing this just for learning positional embeddings.
+Seq length was increased, batch_size reduced. Warmup steps and learning rate unchanged.
+
+python3 run_pretraining.py \
+ --input_file=${BERT_BASE_DIR}/training_data_512_20_5_cased/tf_examples.tfrecord* \
+ --init_checkpoint=${BERT_BASE_DIR}/runs/run2019-04-17_15:16:33/model.ckpt-270000 \
+ --output_dir=${BERT_BASE_DIR}/${RUN_DIR} \
+ --do_train=True \
+ --bert_config_file=${BERT_BASE_DIR}/bert_config.json \
+ --train_batch_size=128 \
+ --max_seq_length=512 \
+ --max_predictions_per_seq=20 \
+ --num_train_steps=30000 \
+ --num_warmup_steps=10000 \
+ --learning_rate=1e-4 \
+ --use_tpu=True \
+ --tpu_name=bert-2\
+ --save_checkpoints_steps=5000\
+ --iterations_per_loop=250\
+ --save_summary_steps=250
+
 python3 run_eval.py \
-    --ckpt_dir=${BERT_BASE_DIR}/${RUN_DIR} \
-    --input_files=${BERT_BASE_DIR}/training_data/tf_examples.tfrecord40 \
-    --bert_config_file=./samples/bert_config.json \
-    --eval_batch_size=8 \
-    --max_seq_length=128 \
-    --iterations_per_loop=8 \
-    --max_eval_steps=100
-    --use_tpu=True \
-    --tpu_name=bert
+--ckpt_dir=phase_2 \
+--input_files=gs://german-bert/training_data/tf_examples.tfrecord1 \
+--bert_config_file=gs://german-bert/bert_config.json \
+--eval_batch_size=128 \
+--max_seq_length=128 \
+--iterations_per_loop=128 \
+--max_eval_steps=128 \
+--bucket=german-bert
 
+PHASE 1b continued
 
+Same length as Phase 1a
+Half learning rate
+Less warmup steps
+
+python3 run_pretraining.py \
+ --input_file=${BERT_BASE_DIR}/training_data_128_20_10_cased/tf_examples.tfrecord* \
+ --init_checkpoint=gs://german-bert/runs/phase_1a/ \
+ --output_dir=${BERT_BASE_DIR}/${RUN_DIR} \
+ --do_train=True \
+ --bert_config_file=${BERT_BASE_DIR}/bert_config.json \
+ --train_batch_size=1024 \
+ --max_seq_length=128 \
+ --max_predictions_per_seq=20 \
+ --num_train_steps=540000 \
+ --num_warmup_steps=5000 \
+ --learning_rate=5e-5 \
+ --use_tpu=True \
+ --tpu_name=bert\
+ --save_checkpoints_steps=5000\
+ --iterations_per_loop=250\
+ --save_summary_steps=250
 
 --------------------------------------------------------------
 --------------------------------------------------------------
@@ -230,3 +274,29 @@ python3 run_eval.py \
 
 --sa_key=/Users/deepset/deepset/google-cloud-sdk/deepset-german-bert-b7a607d49b3a.json
 --bucket=german-bert
+
+--------------------------------------------------------------
+--------------------------------------------------------------
+
+PHASE 2b
+This resumes training with a longer sequence length from the 350k checkpoints of run 1b (The point with lowest loss).
+Learning rate unchanged from phase 1b. num_warmup_steps and num_train_steps matches phase 2a
+
+
+python3 run_pretraining.py \
+ --input_file=${BERT_BASE_DIR}/training_data_512_20_5_cased/tf_examples.tfrecord* \
+ --init_checkpoint=${BERT_BASE_DIR}/runs/phase_1b/model.ckpt-350000 \
+ --output_dir=${BERT_BASE_DIR}/${RUN_DIR} \
+ --do_train=True \
+ --bert_config_file=${BERT_BASE_DIR}/bert_config.json \
+ --train_batch_size=128 \
+ --max_seq_length=512 \
+ --max_predictions_per_seq=20 \
+ --num_train_steps=30000 \
+ --num_warmup_steps=10000 \
+ --learning_rate=5e-5 \
+ --use_tpu=True \
+ --tpu_name=bert\
+ --save_checkpoints_steps=5000\
+ --iterations_per_loop=250\
+ --save_summary_steps=250
