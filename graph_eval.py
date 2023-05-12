@@ -10,7 +10,7 @@ def graph(eval_file):
     lines = [l[:-1] for l in open(eval_file)]
     grouped_lines = [lines[x:x+9] for x in range(0, len(lines), 9)]
     parsed_groups = [parse_group(gl) for gl in grouped_lines]
-    
+
     losses = ["loss", "masked_lm_loss", "next_sentence_loss"]
     accuracy = ["masked_lm_accuracy", "next_sentence_accuracy"]
 
@@ -20,7 +20,7 @@ def graph(eval_file):
         x, y = zip(*coords)
         plt.plot(x, y, label=a)
     plt.legend()
-    save_file = eval_file[:-4] + "_accuracy.png"
+    save_file = f"{eval_file[:-4]}_accuracy.png"
     plt.savefig(save_file)
     plt.clf()
 
@@ -30,7 +30,7 @@ def graph(eval_file):
         x, y = zip(*coords)
         plt.plot(x, y, label=l)
     plt.legend()
-    save_file = eval_file[:-4] + "_loss.png"
+    save_file = f"{eval_file[:-4]}_loss.png"
     plt.savefig(save_file)
     plt.clf()
 

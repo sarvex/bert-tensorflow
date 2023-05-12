@@ -115,17 +115,19 @@ class AdamWeightDecayOptimizer(tf.train.Optimizer):
       param_name = self._get_variable_name(param.name)
 
       m = tf.get_variable(
-          name=param_name + "/adam_m",
+          name=f"{param_name}/adam_m",
           shape=param.shape.as_list(),
           dtype=tf.float32,
           trainable=False,
-          initializer=tf.zeros_initializer())
+          initializer=tf.zeros_initializer(),
+      )
       v = tf.get_variable(
-          name=param_name + "/adam_v",
+          name=f"{param_name}/adam_v",
           shape=param.shape.as_list(),
           dtype=tf.float32,
           trainable=False,
-          initializer=tf.zeros_initializer())
+          initializer=tf.zeros_initializer(),
+      )
 
       # Standard Adam update.
       next_m = (
@@ -170,7 +172,7 @@ class AdamWeightDecayOptimizer(tf.train.Optimizer):
     """Get the variable name from the tensor name."""
     m = re.match("^(.*):\\d+$", param_name)
     if m is not None:
-      param_name = m.group(1)
+      param_name = m[1]
     return param_name
 
 
@@ -211,76 +213,78 @@ class LAMBOptimizer(tf.train.Optimizer):
         self.exclude_from_weight_decay = exclude_from_weight_decay
 
     def apply_gradients(self, grads_and_vars, global_step=None, name=None):
-        """See base class."""
-        assignments = []
-        for (grad, param) in grads_and_vars:
-            if grad is None or param is None:
-                continue
+      """See base class."""
+      assignments = []
+      for (grad, param) in grads_and_vars:
+        if grad is None or param is None:
+            continue
 
-            param_name = self._get_variable_name(param.name)
+        param_name = self._get_variable_name(param.name)
 
-            m = tf.get_variable(
-                name=param_name + "/lamb_m",
-                shape=param.shape.as_list(),
-                dtype=tf.float32,
-                trainable=False,
-                initializer=tf.zeros_initializer())
-            v = tf.get_variable(
-                name=param_name + "/lamb_v",
-                shape=param.shape.as_list(),
-                dtype=tf.float32,
-                trainable=False,
-                initializer=tf.zeros_initializer())
+        m = tf.get_variable(
+            name=f"{param_name}/lamb_m",
+            shape=param.shape.as_list(),
+            dtype=tf.float32,
+            trainable=False,
+            initializer=tf.zeros_initializer(),
+        )
+        v = tf.get_variable(
+            name=f"{param_name}/lamb_v",
+            shape=param.shape.as_list(),
+            dtype=tf.float32,
+            trainable=False,
+            initializer=tf.zeros_initializer(),
+        )
 
-            # Standard Adam update.
-            next_m = (
-                    tf.multiply(self.beta_1, m) + tf.multiply(1.0 - self.beta_1, grad))
-            next_v = (
-                    tf.multiply(self.beta_2, v) + tf.multiply(1.0 - self.beta_2,
-                                                              tf.square(grad)))
+        # Standard Adam update.
+        next_m = (
+                tf.multiply(self.beta_1, m) + tf.multiply(1.0 - self.beta_1, grad))
+        next_v = (
+                tf.multiply(self.beta_2, v) + tf.multiply(1.0 - self.beta_2,
+                                                          tf.square(grad)))
 
-            update = next_m / (tf.sqrt(next_v) + self.epsilon)
+        update = next_m / (tf.sqrt(next_v) + self.epsilon)
 
-            # Just adding the square of the weights to the loss function is *not*
-            # the correct way of using L2 regularization/weight decay with Adam,
-            # since that will interact with the m and v parameters in strange ways.
-            #
-            # Instead we want ot decay the weights in a manner that doesn't interact
-            # with the m/v parameters. This is equivalent to adding the square
-            # of the weights to the loss with plain (non-momentum) SGD.
-            if self._do_use_weight_decay(param_name):
-                update += self.weight_decay_rate * param
+        # Just adding the square of the weights to the loss function is *not*
+        # the correct way of using L2 regularization/weight decay with Adam,
+        # since that will interact with the m and v parameters in strange ways.
+        #
+        # Instead we want ot decay the weights in a manner that doesn't interact
+        # with the m/v parameters. This is equivalent to adding the square
+        # of the weights to the loss with plain (non-momentum) SGD.
+        if self._do_use_weight_decay(param_name):
+            update += self.weight_decay_rate * param
 
-            ############## BELOW ARE THE SPECIFIC PARTS FOR LAMB ##############
+        ############## BELOW ARE THE SPECIFIC PARTS FOR LAMB ##############
 
-            # Note: Here are two choices for scaling function \phi(z)
-            # minmax:   \phi(z) = min(max(z, \gamma_l), \gamma_u)
-            # identity: \phi(z) = z
-            # The authors does not mention what is \gamma_l and \gamma_u
-            # UPDATE: after asking authors, they provide me the code below.
-            # ratio = array_ops.where(math_ops.greater(w_norm, 0), array_ops.where(
-            #      math_ops.greater(g_norm, 0), (w_norm / g_norm), 1.0), 1.0)
+        # Note: Here are two choices for scaling function \phi(z)
+        # minmax:   \phi(z) = min(max(z, \gamma_l), \gamma_u)
+        # identity: \phi(z) = z
+        # The authors does not mention what is \gamma_l and \gamma_u
+        # UPDATE: after asking authors, they provide me the code below.
+        # ratio = array_ops.where(math_ops.greater(w_norm, 0), array_ops.where(
+        #      math_ops.greater(g_norm, 0), (w_norm / g_norm), 1.0), 1.0)
 
-            r1 = tf.sqrt(tf.reduce_sum(tf.square(param)))
-            r2 = tf.sqrt(tf.reduce_sum(tf.square(update)))
+        r1 = tf.sqrt(tf.reduce_sum(tf.square(param)))
+        r2 = tf.sqrt(tf.reduce_sum(tf.square(update)))
 
-            r = tf.where(tf.greater(r1, 0.0),
-                         tf.where(tf.greater(r2, 0.0),
-                                  r1 / r2,
-                                  1.0),
-                         1.0)
+        r = tf.where(tf.greater(r1, 0.0),
+                     tf.where(tf.greater(r2, 0.0),
+                              r1 / r2,
+                              1.0),
+                     1.0)
 
-            eta = self.learning_rate * r
+        eta = self.learning_rate * r
 
-            update_with_lr = eta * update
+        update_with_lr = eta * update
 
-            next_param = param - update_with_lr
+        next_param = param - update_with_lr
 
-            assignments.extend(
-                [param.assign(next_param),
-                 m.assign(next_m),
-                 v.assign(next_v)])
-        return tf.group(*assignments, name=name)
+        assignments.extend(
+            [param.assign(next_param),
+             m.assign(next_m),
+             v.assign(next_v)])
+      return tf.group(*assignments, name=name)
 
     def _do_use_weight_decay(self, param_name):
         """Whether to use L2 weight decay for `param_name`."""
@@ -293,9 +297,9 @@ class LAMBOptimizer(tf.train.Optimizer):
         return True
 
     def _get_variable_name(self, param_name):
-        """Get the variable name from the tensor name."""
-        m = re.match("^(.*):\\d+$", param_name)
-        if m is not None:
-            param_name = m.group(1)
-        return param_name
+      """Get the variable name from the tensor name."""
+      m = re.match("^(.*):\\d+$", param_name)
+      if m is not None:
+        param_name = m[1]
+      return param_name
 

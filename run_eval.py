@@ -124,7 +124,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
 
     tf.logging.info("*** Features ***")
     for name in sorted(features.keys()):
-      tf.logging.info("  name = %s, shape = %s" % (name, features[name].shape))
+      tf.logging.info(f"  name = {name}, shape = {features[name].shape}")
 
 
 
@@ -240,7 +240,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
           eval_metrics=eval_metrics,
           scaffold_fn=scaffold_fn)
     else:
-      raise ValueError("Only TRAIN and EVAL modes are supported: %s" % (mode))
+      raise ValueError(f"Only TRAIN and EVAL modes are supported: {mode}")
 
     return output_spec
 
@@ -327,8 +327,7 @@ def gather_indexes(sequence_tensor, positions):
   flat_positions = tf.reshape(positions + flat_offsets, [-1])
   flat_sequence_tensor = tf.reshape(sequence_tensor,
                                     [batch_size * seq_length, width])
-  output_tensor = tf.gather(flat_sequence_tensor, flat_positions)
-  return output_tensor
+  return tf.gather(flat_sequence_tensor, flat_positions)
 
 
 def input_fn_builder(input_files,
@@ -416,10 +415,7 @@ def _decode_record(record, name_to_features):
 def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
-  location = "local"
-  if FLAGS.ckpt_dir[:5] == "gs://":
-    location = "gcloud"
-
+  location = "gcloud" if FLAGS.ckpt_dir[:5] == "gs://" else "local"
   bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
 
   input_files = []
@@ -428,16 +424,14 @@ def main(_):
 
   tf.logging.info("*** Input Files ***")
   for input_file in input_files:
-    tf.logging.info("  %s" % input_file)
+    tf.logging.info(f"  {input_file}")
 
   tpu_cluster_resolver = None
   if FLAGS.use_tpu and FLAGS.tpu_name:
     tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
         FLAGS.tpu_name, zone=FLAGS.tpu_zone, project=FLAGS.gcp_project)
 
-  if location == "local":
-    raw_files = os.listdir(FLAGS.ckpt_dir)
-  elif location == "gcloud":
+  if location == "gcloud":
     try:
       storage_client = storage.Client.from_service_account_json(FLAGS.sa_key)
     except:
@@ -446,9 +440,8 @@ def main(_):
     blobs = bucket.list_blobs()
     ckpt_folder = "/".join(FLAGS.ckpt_dir.split("/")[3:])
     raw_files = [str(b)[1:-1].split("/")[-1] for b in blobs if ckpt_folder in str(b)]
-    # raw_files = [str(b).split("/")[-1] for b in blobs]
-
-
+  elif location == "local":
+    raw_files = os.listdir(FLAGS.ckpt_dir)
   files = [f[:-5] for f in raw_files if f[:5] == "model" and f[-5:] == ".meta"]
   steps = [int(f.split("-")[1]) for f in files]
   fs_sorted = sorted(list(zip(files, steps)), key=lambda x: x[1])
@@ -509,12 +502,12 @@ def main(_):
       writer.write("\n")
 
   eval_file = os.path.join(FLAGS.ckpt_dir, local_eval_file)
-  if location == "local":
-    os.rename(local_eval_file, eval_file)
-  elif location == "gcloud":
+  if location == "gcloud":
     blob = bucket.blob(eval_file)
     blob.upload_from_filename(local_eval_file)
-    print('Eval file uploaded to {}.'.format(eval_file))
+    print(f'Eval file uploaded to {eval_file}.')
+  elif location == "local":
+    os.rename(local_eval_file, eval_file)
 
 if __name__ == "__main__":
   flags.mark_flag_as_required("input_files")
